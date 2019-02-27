@@ -569,6 +569,12 @@ if __name__ == '__main__':
     parser.add_argument('-f','--filters-file',
                         help="File containing rclone file/path filters (needed for Dropbox).",
                         default=None)
+    parser.add_argument('-l','--lockfile',
+                        help="Full path to rclonesync LOCK file (default is /tmp/rclonesync_LOCK in *nix, and C:/tmp/rclonesync_LOCK in Windows).",
+                        default=LOCK_FILE)
+    parser.add_argument('-u','--delete-lockfile',
+                        help="Force remove rclonesync LOCK file if it exists. EXERCISE CAUTION WHEN USING THIS OPTION.",
+                        action="store_true")
     parser.add_argument('-r','--rclone',
                         help="Full path to rclone executable (default is rclone in path).",
                         default="rclone")
@@ -606,6 +612,9 @@ if __name__ == '__main__':
     force        =  args.force
     rmdirs       =  args.remove_empty_directories
     workdir      =  args.workdir + '/'
+
+    if args.lockfile:
+        LOCK_FILE = args.lockfile
 
     if not args.no_datetime_log:
         logging.basicConfig(format='%(asctime)s:  %(message)s') # /%(levelname)s/%(module)s/%(funcName)s
@@ -679,6 +688,10 @@ if __name__ == '__main__':
         logging.getLogger().setLevel(logging.INFO)              # Log each file transaction
     else:
         logging.getLogger().setLevel(logging.WARNING)           # Log only unusual events
+
+
+    if args.delete_lockfile:
+        release_lock(sys.argv)
 
 
     if request_lock(sys.argv) == 0:
